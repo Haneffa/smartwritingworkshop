@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Writing Workshop — Dopamine Feedback Poll</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            dopaYellow: '#FFD93D',
+            dopaPink: '#FF6B9A',
+            dopaBlue: '#6BCBFF',
+            dopaGreen: '#6BCB77',
+            dopaPurple: '#B19CFF',
+            dopaCream: '#FFF9ED',
+            dopaNavy: '#203A80',
+            dopaCardBg: '#FFFFFF',
+          },
+          fontFamily: {
+            heading: ['Poppins', 'sans-serif'],
+            body: ['Nunito', 'sans-serif'],
+          },
+          boxShadow: {
+            'pop': '0px 10px 0px 0px #203A80',
+            'pop-sm': '0px 5px 0px 0px #203A80',
+            'pop-active': '0px 2px 0px 0px #203A80',
+            'glow-pink': '0px 15px 35px -5px rgba(255, 107, 154, 0.4)',
+            'glow-yellow': '0px 15px 35px -5px rgba(255, 217, 61, 0.45)',
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    body {
+      background-color: #FFF9ED;
+      color: #203A80;
+      font-family: 'Nunito', sans-serif;
+      overflow-x: hidden;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .dopamine-bg-pattern {
+      background-color: #FFF9ED;
+      background-image: 
+        radial-gradient(#FFD93D 1.8px, transparent 1.8px),
+        radial-gradient(#6BCBFF 1.8px, #FFF9ED 1.8px);
+      background-size: 48px 48px;
+      background-position: 0 0, 24px 24px;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    @keyframes floaty {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+    }
+    @keyframes bounceSquish {
+      0%, 100% { transform: scale(1, 1); }
+      40% { transform: scale(1.15, 0.85); }
+      70% { transform: scale(0.9, 1.1); }
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.92) translateY(12px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .animate-wiggle { animation: wiggle 2.5s ease-in-out infinite; }
+    .animate-float { animation: floaty 3s ease-in-out infinite; }
+    .animate-squish:active { animation: bounceSquish 0.3s ease; }
+    .animate-pop-in { animation: popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+    .tactile-btn {
+      transition: all 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .tactile-btn:hover {
+      transform: translateY(-3px);
+    }
+    .tactile-btn:active {
+      transform: translateY(3px);
+    }
+
+    .option-card.selected {
+      background-color: #FFF3F7 !important;
+      border-color: #FF6B9A !important;
+      box-shadow: 0px 6px 0px 0px #FF6B9A !important;
+      transform: translateY(-2px);
+    }
+
+    .popit-board {
+      background: linear-gradient(145deg, #ffffff, #fff3e0);
+      border: 4px solid #203A80;
+      box-shadow: 0 12px 0 #203A80, 0 16px 25px rgba(32, 58, 128, 0.2);
+    }
+
+    .pop-bubble {
+      position: relative;
+      border-radius: 9999px;
+      transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+      cursor: pointer;
+      user-select: none;
+      box-shadow: inset 0 -6px 0 rgba(0, 0, 0, 0.22), 0 6px 0 #203A80;
+      border: 3px solid #203A80;
+    }
+
+    .pop-bubble:hover:not(.popped) {
+      transform: translateY(-4px) scale(1.05);
+      filter: brightness(1.08);
+    }
+
+    .pop-bubble:active:not(.popped) {
+      transform: translateY(4px) scale(0.95);
+      box-shadow: inset 0 4px 6px rgba(0,0,0,0.3);
+    }
+
+    .pop-bubble.popped {
+      transform: translateY(3px) scale(0.93);
+      box-shadow: inset 0 6px 10px rgba(0, 0, 0, 0.35), 0 2px 0 #203A80;
+      opacity: 0.92;
+      border-color: #203A80;
+    }
+
+    .pop-bubble.popped::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 9999px;
+      background: radial-gradient(circle at center, transparent 35%, rgba(0,0,0,0.18) 100%);
+      pointer-events: none;
+    }
+
+    .pop-bubble.popped-correct {
+      border-color: #15803d !important;
+    }
+
+    .pop-bubble.popped-wrong {
+      border-color: #be123c !important;
+    }
+
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+  </style>
+</head>
+
+<body class="dopamine-bg-pattern min-h-screen flex flex-col justify-between selection:bg-dopaYellow selection:text-dopaNavy">
+  <canvas id="confettiCanvas"></canvas>
+
+  <header class="w-full max-w-4xl mx-auto pt-6 px-4 sm:px-6">
+    <div class="flex items-center justify-between pb-3 border-b-2 border-dopaNavy/15">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-dopaYellow rounded-2xl border-3 border-dopaNavy flex items-center justify-center shadow-pop-sm relative animate-wiggle">
+          <span class="text-2xl">✍️</span>
+          <span class="absolute -top-1 -right-1 text-xs">✨</span>
+        </div>
+        <div>
+          <span class="text-[10px] sm:text-xs font-black uppercase tracking-widest text-dopaPink bg-white px-2.5 py-0.5 rounded-full border border-dopaPink inline-block">
+            ⚡ Anonymous Workshop Poll
+          </span>
+          <h1 class="text-lg sm:text-2xl font-black text-dopaNavy tracking-tight leading-tight">
+            SMART WRITING WORKSHOP
+          </h1>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openPinModal()" class="tactile-btn px-3 py-2 rounded-xl bg-dopaPurple text-white border-2 border-dopaNavy shadow-pop-sm font-black text-xs sm:text-sm hover:bg-purple-600 flex items-center gap-1.5" title="Access Facilitator Dashboard">
+          <span>🎓</span>
+          <span class="hidden sm:inline">Lecturer</span>
+          <span>Results</span>
+        </button>
+        <button id="soundToggleBtn" onclick="toggleAudio()" class="w-10 h-10 rounded-xl bg-white border-2 border-dopaNavy shadow-pop-sm flex items-center justify-center text-lg hover:bg-dopaYellow/20 transition-all tactile-btn" title="Toggle Sound FX">
+          <span id="soundIcon">🔊</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mode Switcher Navigation -->
+    <div class="mt-4 flex justify-center">
+      <div class="bg-white/90 p-1.5 rounded-2xl border-3 border-dopaNavy shadow-pop-sm inline-flex gap-2 max-w-full">
+        <button id="tabFeedbackBtn" onclick="switchAppTab('feedback')" class="tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-dopaPink text-white border-2 border-dopaNavy shadow-pop-sm">
+          <span class="text-base sm:text-lg">✍️</span>
+          <span>Workshop Feedback Poll</span>
+          <span class="bg-white text-dopaPink text-[10px] px-2 py-0.5 rounded-full uppercase font-black tracking-wider">10 Soalan</span>
+        </button>
+        <button id="tabPopItBtn" onclick="switchAppTab('popit')" class="tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-transparent text-dopaNavy/70 hover:text-dopaNavy border-2 border-transparent">
+          <span class="text-base sm:text-lg">🫧</span>
+          <span>Pop & Learn: Betul/Salah!</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Header Mood Banner -->
+    <div id="feedbackHeaderBanner" class="mt-4 text-center">
+      <h2 class="text-2xl sm:text-4xl font-extrabold text-dopaNavy tracking-tight">
+        How Was Your <span class="text-dopaPink underline decoration-wavy decoration-dopaYellow">Learning Journey?</span>
+      </h2>
+      <p class="text-xs sm:text-sm text-dopaNavy/80 font-bold mt-1 max-w-lg mx-auto">
+        Tap, rate, and share your creative vibes! A quick dopamine-fuelled pulse check to help us create even more awesome experiences.
+      </p>
+
+      <div class="mt-3.5 inline-flex items-center gap-2 bg-emerald-100/90 text-emerald-950 px-4 py-2 rounded-2xl border-2 border-emerald-400 text-xs sm:text-sm font-bold shadow-sm max-w-2xl text-left">
+        <span class="text-lg flex-shrink-0">🔒</span>
+        <span>
+          <strong class="text-emerald-900">Privacy Notice:</strong> Your feedback is anonymous. No personal identification is required. Your responses will help improve future workshops.
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= WORKSHOP FEEDBACK POLL VIEW ================= -->
+  <main id="feedbackPollSection" class="w-full max-w-2xl mx-auto px-4 py-6 flex-grow flex flex-col justify-center">
+    
+    <!-- Paused Notice -->
+    <div id="closedPollBanner" class="hidden mb-6 bg-red-100 border-3 border-red-500 rounded-3xl p-5 text-center shadow-pop">
+      <div class="text-3xl mb-1">⏸️</div>
+      <h3 class="font-heading font-black text-lg text-red-900">Poll Currently Paused</h3>
+      <p class="text-xs font-bold text-red-800 mt-1">
+        The facilitator has currently closed submissions. You can still view the results in the Lecturer Portal above.
+      </p>
+    </div>
+
+    <!-- Progress & Mascot HUD -->
+    <div id="progressContainer" class="bg-white rounded-3xl p-4 mb-6 border-3 border-dopaNavy shadow-pop">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2.5">
+          <div id="mascotAvatar" class="w-11 h-11 rounded-2xl bg-dopaPink/20 border-2 border-dopaNavy flex items-center justify-center text-2xl transition-all duration-300">
+            🐣
+          </div>
+          <div>
+            <div class="text-[11px] font-black uppercase text-dopaNavy/70 tracking-wider">
+              Dopamine Battery
+            </div>
+            <div id="questionStepText" class="text-sm font-black text-dopaNavy">
+              Question 1 of 10
+            </div>
+          </div>
+        </div>
+
+        <div id="progressPercentBadge" class="bg-dopaYellow font-heading font-black text-dopaNavy px-3 py-1 rounded-xl border-2 border-dopaNavy text-xs sm:text-sm shadow-sm">
+          0% Completed
+        </div>
+      </div>
+
+      <div class="w-full h-4 bg-gray-100 rounded-full border-2 border-dopaNavy p-0.5 overflow-hidden relative">
+        <div id="progressBarFill" class="h-full bg-gradient-to-r from-dopaYellow via-dopaPink to-dopaPurple rounded-full transition-all duration-500 ease-out" style="width: 10%;"></div>
+      </div>
+      
+      <div class="flex justify-between items-center mt-2.5 pt-2 border-t border-gray-100 text-xs font-bold text-dopaNavy/70">
+        <span id="sectionBadge" class="bg-dopaBlue/20 text-blue-900 px-2.5 py-0.5 rounded-lg border border-dopaBlue">
+          Section 1: Vibe & Energy
+        </span>
+        <span id="streakCheer" class="text-dopaPink font-extrabold animate-pulse">
+          ⚡ Ready to roll!
+        </span>
+      </div>
+    </div>
+
+    <!-- Active Question Card -->
+    <div id="quizCardWrapper" class="relative">
+      <div id="activeCard" class="bg-white rounded-3xl p-6 sm:p-8 border-3 border-dopaNavy shadow-pop transition-all duration-300">
+        <div class="mb-5">
+          <div class="flex items-center gap-2 mb-2">
+            <span id="cardCategoryTag" class="text-xs font-black uppercase tracking-wider px-3 py-1 bg-dopaYellow rounded-full border border-dopaNavy">
+              ⚡ Workshop Vibe
+            </span>
+            <span class="text-xs font-extrabold text-dopaPink bg-pink-50 px-2.5 py-0.5 rounded-full border border-pink-200">
+              Compulsory *
+            </span>
+          </div>
+          <h3 id="questionHeading" class="text-xl sm:text-2xl font-black text-dopaNavy leading-snug">
+            How would you describe the overall energy and excitement in the workshop?
+          </h3>
+          <p id="questionHint" class="text-xs sm:text-sm font-semibold text-dopaNavy/70 mt-1">
+            Pick the reaction that matches your heartbeat today:
+          </p>
+        </div>
+
+        <div id="optionsContainer" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <div class="flex items-center justify-between pt-4 border-t-2 border-gray-100">
+          <button id="prevBtn" onclick="handlePrevious()" class="tactile-btn px-4 py-2.5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-gray-100 text-dopaNavy hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:transform-none" disabled>
+            ← Back
+          </button>
+          
+          <div class="text-xs font-bold text-dopaNavy/50 italic hidden sm:block">
+            Auto-advances when selected 🚀
+          </div>
+
+          <button id="nextBtn" onclick="handleNextManual()" class="tactile-btn px-6 py-2.5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-dopaYellow text-dopaNavy shadow-pop-sm hover:bg-yellow-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:transform-none" disabled>
+            Next →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Summary Screen -->
+    <div id="summaryScreen" class="hidden bg-white rounded-3xl p-6 sm:p-8 border-3 border-dopaNavy shadow-pop animate-pop-in">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 bg-dopaYellow/40 rounded-3xl border-3 border-dopaNavy mx-auto flex items-center justify-center text-3xl shadow-pop-sm mb-3 animate-float">
+          🎉
+        </div>
+        <span class="text-xs font-black uppercase tracking-widest text-dopaGreen bg-emerald-50 px-3 py-1 rounded-full border border-emerald-300">
+          All 10 Questions Answered!
+        </span>
+        <h3 class="text-2xl sm:text-3xl font-black text-dopaNavy mt-2">
+          Your Dopamine Summary
+        </h3>
+        <p class="text-sm text-dopaNavy/80 font-bold max-w-md mx-auto mt-1">
+          Review your answers below. You can jump back to edit any question or add an optional spark before finalizing.
+        </p>
+      </div>
+
+      <div id="summaryChips" class="bg-dopaCream rounded-2xl p-4 border-2 border-dopaNavy/20 mb-6 max-h-56 overflow-y-auto space-y-2 text-xs sm:text-sm">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="bg-pink-50/70 rounded-2xl p-4 border-2 border-dopaPink/40 mb-6">
+        <label for="optionalFeedback" class="block font-black text-sm text-dopaNavy mb-1 flex items-center justify-between">
+          <span class="flex items-center gap-1.5">
+            <span>💡</span> Drop a Spark of Thought (Optional)
+          </span>
+          <span class="text-xs font-bold text-dopaPink uppercase">100% Anonymous</span>
+        </label>
+        <p class="text-xs font-semibold text-dopaNavy/70 mb-2">
+          What was your single favourite moment, or one thing we could make 10x more thrilling?
+        </p>
+        <textarea id="optionalFeedback" rows="3" placeholder="e.g. Loved the timed quick-write sprints! Would love even more real-time examples on catchy hooks..." class="w-full p-3 rounded-xl border-2 border-dopaNavy/30 focus:border-dopaPink focus:outline-none text-sm text-dopaNavy font-medium resize-none bg-white"></textarea>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3">
+        <button onclick="goToQuestion(9)" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-gray-100 text-dopaNavy hover:bg-gray-200">
+          ✏️ Edit Answers
+        </button>
+        <button id="finalSubmitBtn" onclick="submitPoll()" class="tactile-btn flex-1 py-3.5 px-6 rounded-2xl border-3 border-dopaNavy font-black text-base bg-dopaPink text-white shadow-pop hover:bg-pink-500 flex items-center justify-center gap-2">
+          <span>🚀 Submit Anonymous Feedback</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div id="successScreen" class="hidden bg-white rounded-3xl p-6 sm:p-10 border-3 border-dopaNavy shadow-pop text-center relative overflow-hidden animate-pop-in">
+      <div class="relative inline-block mb-4">
+        <div class="w-24 h-24 rounded-full bg-dopaYellow border-3 border-dopaNavy mx-auto flex items-center justify-center text-5xl shadow-pop animate-wiggle">
+          🌟
+        </div>
+        <span class="absolute -bottom-1 -right-2 text-2xl animate-bounce">🎨</span>
+      </div>
+
+      <span class="inline-block bg-dopaGreen text-emerald-950 font-black text-xs uppercase tracking-wider px-3 py-1 rounded-full border-2 border-dopaNavy mb-2">
+        Feedback Recorded!
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-black text-dopaNavy tracking-tight">
+        High Five, Storyteller! 🙌
+      </h2>
+      <p class="text-base text-dopaNavy/80 font-bold max-w-md mx-auto mt-2">
+        Thank you for injecting your vibrant energy into our workshop. Your insights will directly shape upcoming writing cohorts!
+      </p>
+
+      <div class="my-6 p-5 rounded-2xl bg-gradient-to-r from-yellow-100 via-pink-100 to-purple-100 border-2 border-dopaNavy/20 max-w-md mx-auto shadow-sm">
+        <div class="text-[11px] font-black uppercase text-dopaNavy/70 tracking-wider">Your Official Workshop Persona</div>
+        <div id="personaResultTitle" class="text-xl font-black text-dopaNavy mt-1">
+          ✨ Creative Spark Igniter ✨
+        </div>
+        <p id="personaResultDesc" class="text-xs font-semibold text-dopaNavy/80 mt-1">
+          Ready to turn bold ideas into unforgettable stories and viral hooks!
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-lg mx-auto mt-4">
+        <button onclick="openPinModal()" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-dopaGreen text-emerald-950 shadow-pop-sm hover:bg-emerald-300 flex items-center justify-center gap-2">
+          <span>📊 View Workshop Results</span>
+        </button>
+        <button onclick="shareCompletion()" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-dopaBlue text-blue-950 shadow-pop-sm hover:bg-sky-300 flex items-center justify-center gap-2">
+          <span>📋 Copy Mood Card</span>
+        </button>
+        <button onclick="restartPoll()" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-white text-dopaNavy shadow-pop-sm hover:bg-gray-50 flex items-center justify-center gap-2">
+          <span>🔄 Submit Another</span>
+        </button>
+      </div>
+
+      <div id="toastBox" class="mt-4 hidden p-3 rounded-xl bg-dopaNavy text-white font-bold text-xs max-w-xs mx-auto animate-pulse">
+        Copied to clipboard! 🌟
+      </div>
+    </div>
+  </main>
+
+  <!-- ================= POP & LEARN: BETUL ATAU SALAH! GAME VIEW ================= -->
+  <section id="popItGameSection" class="hidden w-full max-w-3xl mx-auto px-4 py-4 flex-grow flex-col justify-center">
+    
+    <!-- Welcome Screen -->
+    <div id="popWelcomeScreen" class="bg-white rounded-3xl p-6 sm:p-10 border-3 border-dopaNavy shadow-pop text-center animate-pop-in">
+      <div class="relative inline-block mb-3">
+        <div class="w-20 h-20 rounded-3xl bg-dopaYellow border-3 border-dopaNavy mx-auto flex items-center justify-center text-4xl shadow-pop animate-wiggle">
+          🫧
+        </div>
+        <span class="absolute -top-1 -right-2 text-2xl animate-bounce">⚡</span>
+      </div>
+
+      <span class="inline-block bg-dopaBlue/20 text-blue-950 font-black text-xs uppercase tracking-wider px-3 py-1 rounded-full border border-dopaBlue mb-2">
+        Pop-It Knowledge Check
+      </span>
+      <h2 class="text-2xl sm:text-4xl font-black text-dopaNavy tracking-tight">
+        POP & LEARN: BETUL ATAU SALAH!
+      </h2>
+      <p class="text-sm sm:text-base font-extrabold text-dopaPink mt-1">
+        Uji kefahaman anda tentang Smart Writing Workshop
+      </p>
+
+      <div class="mt-5 p-4 rounded-2xl bg-dopaCream border-2 border-dopaNavy/20 max-w-md mx-auto text-left space-y-2 text-xs sm:text-sm font-bold text-dopaNavy">
+        <div class="flex items-start gap-2">
+          <span class="text-base">🎯</span>
+          <span>Klik mana-mana bubble warna-warni untuk mula menjawab soalan.</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-base">💡</span>
+          <span>Setiap bubble akan memunculkan satu soalan <strong>Betul / Salah</strong>.</span>
+        </div>
+        <div class="flex items-start gap-2">
+          <span class="text-base">🏆</span>
+          <span>Jawab semua 15 soalan untuk mencatat rekod markah dan lencana dopamine anda!</span>
+        </div>
+      </div>
+
+      <div class="mt-6">
+        <button onclick="startPopItGame()" class="tactile-btn py-3.5 px-8 rounded-2xl border-3 border-dopaNavy font-black text-base sm:text-lg bg-dopaGreen text-emerald-950 shadow-pop hover:bg-emerald-300 inline-flex items-center gap-2">
+          <span>🚀 Mula Bermain Sekarang</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Pop-It Board -->
+    <div id="popBoardScreen" class="hidden flex-col items-center animate-pop-in">
+      <div class="w-full bg-white rounded-2xl p-4 mb-4 border-3 border-dopaNavy shadow-pop flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-dopaYellow border-2 border-dopaNavy flex items-center justify-center text-2xl shadow-pop-sm">
+            🫧
+          </div>
+          <div>
+            <div class="text-[10px] font-black uppercase text-dopaNavy/70 tracking-wider">
+              Status Pop-It
+            </div>
+            <div id="popAnsweredCountText" class="text-sm font-black text-dopaNavy">
+              0 / 15 Selesai Dipop
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="bg-dopaCream px-3 py-1.5 rounded-xl border-2 border-dopaNavy text-xs font-black text-dopaNavy flex items-center gap-1.5">
+            <span>⭐ Skor:</span>
+            <span id="popScoreText" class="text-dopaPink text-sm font-black">0</span>
+          </div>
+          <button onclick="restartPopItGame()" class="tactile-btn px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-dopaNavy rounded-xl border-2 border-dopaNavy font-black text-xs flex items-center gap-1">
+            <span>🔄</span> Mula Semula
+          </button>
+        </div>
+
+        <div class="w-full h-3 bg-gray-100 rounded-full border-2 border-dopaNavy p-0.5 overflow-hidden">
+          <div id="popProgressFill" class="h-full bg-gradient-to-r from-dopaYellow via-dopaPink to-dopaGreen rounded-full transition-all duration-300" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <div class="popit-board w-full rounded-3xl p-5 sm:p-7 border-4 border-dopaNavy relative overflow-hidden">
+        <div class="flex items-center justify-between mb-4 pb-2 border-b-2 border-dopaNavy/15">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-dopaPink animate-pulse"></span>
+            <span class="font-heading font-black text-xs sm:text-sm text-dopaNavy uppercase tracking-wider">
+              Pop-It Silicon Board — Pilih Bubble Anda!
+            </span>
+          </div>
+          <span class="text-xs font-bold text-dopaNavy/60 hidden sm:inline">15 Soalan Interaktif</span>
+        </div>
+
+        <div id="popItBubblesGrid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 justify-items-center">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Pop Question Modal -->
+    <div id="popQuestionModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      <div class="bg-white border-3 border-dopaNavy rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-pop relative animate-pop-in my-auto">
+        <div class="flex items-center justify-between pb-3 border-b-2 border-dopaNavy/15 mb-4">
+          <div class="flex items-center gap-2">
+            <div id="modalBubblePreview" class="w-9 h-9 rounded-full border-2 border-dopaNavy flex items-center justify-center font-black text-sm">
+              1
+            </div>
+            <span class="text-xs font-black uppercase text-dopaNavy/70 tracking-wider">
+              Smart Writing Knowledge Check
+            </span>
+          </div>
+          <span id="modalQuestionBadge" class="text-xs font-extrabold bg-dopaYellow text-dopaNavy px-2.5 py-0.5 rounded-full border border-dopaNavy">
+            Soalan 1 / 15
+          </span>
+        </div>
+
+        <div class="mb-6">
+          <h3 id="modalQuestionText" class="text-base sm:text-lg font-black text-dopaNavy leading-relaxed">
+            Penyataan soalan...
+          </h3>
+        </div>
+
+        <div id="modalChoiceButtons" class="grid grid-cols-2 gap-3 mb-4">
+          <button onclick="handlePopAnswer(true)" class="tactile-btn p-4 rounded-2xl border-3 border-dopaNavy bg-emerald-100 hover:bg-emerald-200 text-emerald-950 font-heading font-black text-lg flex flex-col items-center justify-center gap-1 shadow-pop-sm">
+            <span class="text-3xl">✅</span>
+            <span>BETUL</span>
+          </button>
+          <button onclick="handlePopAnswer(false)" class="tactile-btn p-4 rounded-2xl border-3 border-dopaNavy bg-rose-100 hover:bg-rose-200 text-rose-950 font-heading font-black text-lg flex flex-col items-center justify-center gap-1 shadow-pop-sm">
+            <span class="text-3xl">❌</span>
+            <span>SALAH</span>
+          </button>
+        </div>
+
+        <div id="modalFeedbackBox" class="hidden p-4 rounded-2xl border-2 mb-4 animate-pop-in">
+          <div class="flex items-center gap-2 mb-1.5">
+            <span id="modalFeedbackIcon" class="text-2xl">🎉</span>
+            <h4 id="modalFeedbackStatus" class="font-heading font-black text-base">
+              Betul!
+            </h4>
+          </div>
+          <p id="modalFeedbackExplanation" class="text-xs sm:text-sm font-bold leading-relaxed text-dopaNavy/90">
+            Penjelasan...
+          </p>
+        </div>
+
+        <div id="modalContinueContainer" class="hidden">
+          <button onclick="closePopQuestionModal()" class="tactile-btn w-full py-3 rounded-xl border-2 border-dopaNavy font-black text-sm bg-dopaYellow text-dopaNavy shadow-pop-sm hover:bg-yellow-300 flex items-center justify-center gap-2">
+            <span>Seterusnya → Pop Bubble Lain</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pop Game End Screen -->
+    <div id="popEndScreen" class="hidden bg-white rounded-3xl p-6 sm:p-10 border-3 border-dopaNavy shadow-pop text-center animate-pop-in">
+      <div class="relative inline-block mb-3">
+        <div class="w-20 h-20 rounded-3xl bg-dopaYellow border-3 border-dopaNavy mx-auto flex items-center justify-center text-4xl shadow-pop animate-wiggle">
+          🏆
+        </div>
+        <span class="absolute -bottom-1 -right-2 text-2xl animate-bounce">✨</span>
+      </div>
+
+      <span class="inline-block bg-dopaGreen text-emerald-950 font-black text-xs uppercase tracking-wider px-3 py-1 rounded-full border-2 border-dopaNavy mb-2">
+        Semua 15 Bubble Selesai Dipop!
+      </span>
+      <h2 class="text-3xl sm:text-4xl font-black text-dopaNavy tracking-tight">
+        Tahniah, Smart Writer! 👏
+      </h2>
+
+      <div class="my-5 p-5 rounded-2xl bg-gradient-to-r from-yellow-50 via-pink-50 to-blue-50 border-2 border-dopaNavy max-w-sm mx-auto shadow-sm">
+        <div class="text-[11px] font-black uppercase text-dopaNavy/70 tracking-wider">Markah Keseluruhan</div>
+        <div class="flex items-baseline justify-center gap-1 mt-1">
+          <span id="finalPopScore" class="text-4xl sm:text-5xl font-black text-dopaNavy">0</span>
+          <span class="text-2xl font-black text-dopaNavy/50">/ 15</span>
+        </div>
+        <div id="finalPopPercent" class="text-sm font-black text-dopaPink mt-0.5">
+          (0%)
+        </div>
+        <div id="finalPopStarBadge" class="text-2xl mt-2 tracking-widest">
+          ⭐⭐⭐⭐⭐
+        </div>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-dopaCream border-2 border-dopaNavy/20 max-w-md mx-auto mb-6">
+        <p id="finalPopMotivationText" class="font-heading font-black text-sm sm:text-base text-dopaNavy">
+          Hebat! Anda benar-benar memahami kandungan bengkel!
+        </p>
+      </div>
+
+      <div class="flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
+        <button onclick="openPopReviewModal()" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-dopaBlue text-blue-950 shadow-pop-sm hover:bg-sky-300 flex items-center justify-center gap-2">
+          <span>📋 Lihat Semula Jawapan</span>
+        </button>
+        <button onclick="restartPopItGame()" class="tactile-btn py-3 px-5 rounded-2xl border-2 border-dopaNavy font-black text-sm bg-dopaYellow text-dopaNavy shadow-pop-sm hover:bg-yellow-300 flex items-center justify-center gap-2">
+          <span>🔄 Main Semula</span>
+        </button>
+      </div>
+
+      <div class="mt-4">
+        <button onclick="switchAppTab('feedback')" class="tactile-btn text-xs font-black text-dopaNavy hover:text-dopaPink underline">
+          Lengkapkan Maklum Balas Bengkel (Feedback Poll) →
+        </button>
+      </div>
+    </div>
+
+    <!-- Review Answers Modal -->
+    <div id="popReviewModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5 overflow-y-auto">
+      <div class="bg-white border-3 border-dopaNavy rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-pop overflow-hidden my-auto">
+        <div class="p-4 sm:p-5 bg-dopaCream border-b-2 border-dopaNavy flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">📋</span>
+            <h3 class="font-heading font-black text-lg text-dopaNavy">
+              Ulasan 15 Soalan & Jawapan
+            </h3>
+          </div>
+          <button onclick="closePopReviewModal()" class="w-8 h-8 rounded-xl bg-white border-2 border-dopaNavy font-black text-base flex items-center justify-center hover:bg-dopaPink hover:text-white">
+            ✕
+          </button>
+        </div>
+
+        <div id="popReviewListContainer" class="p-4 sm:p-6 overflow-y-auto space-y-3 flex-grow text-xs sm:text-sm font-bold">
+          <!-- Populated dynamically -->
+        </div>
+
+        <div class="p-3 bg-gray-50 border-t-2 border-dopaNavy flex justify-end">
+          <button onclick="closePopReviewModal()" class="tactile-btn px-4 py-2 bg-dopaYellow rounded-xl border-2 border-dopaNavy font-black text-xs text-dopaNavy">
+            Tutup Ulasan
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="w-full max-w-4xl mx-auto py-6 px-4 text-center">
+    <div class="flex justify-center items-center gap-4 mb-2">
+      <span class="text-2xl transform hover:scale-125 transition-transform cursor-pointer">💧</span>
+      <span class="text-2xl transform hover:scale-125 transition-transform cursor-pointer">⭐</span>
+      <span class="text-2xl transform hover:scale-125 transition-transform cursor-pointer">⚡</span>
+      <span class="text-2xl transform hover:scale-125 transition-transform cursor-pointer">🌸</span>
+      <span class="text-2xl transform hover:scale-125 transition-transform cursor-pointer">🪶</span>
+    </div>
+    <p class="text-xs font-extrabold text-dopaNavy/60">
+      Smart Writing Workshop • Dopamine Learning Experience • Zero tracking, pure feedback.
+    </p>
+    <div class="mt-2">
+      <button onclick="openPinModal()" class="text-xs font-black text-dopaNavy underline hover:text-dopaPink transition-colors">
+        🎓 Lecturer / Facilitator Portal
+      </button>
+    </div>
+  </footer>
+
+  <!-- Lecturer Access Modal -->
+  <div id="pinModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border-3 border-dopaNavy rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-pop text-center animate-pop-in">
+      <div class="w-14 h-14 bg-dopaPurple/20 border-2 border-dopaNavy rounded-2xl mx-auto flex items-center justify-center text-3xl mb-3">
+        🔐
+      </div>
+      <h3 class="font-heading font-black text-xl text-dopaNavy">Lecturer & Facilitator Portal</h3>
+      <p class="text-xs font-semibold text-dopaNavy/70 mt-1 mb-4">
+        Enter your facilitator security PIN to inspect workshop metrics, download CSVs, or manage polling.
+      </p>
+      
+      <div class="mb-4">
+        <input id="lecturerPinInput" type="password" maxlength="6" placeholder="Enter PIN" class="w-full text-center text-2xl font-black tracking-widest py-3 px-4 rounded-xl border-2 border-dopaNavy bg-dopaCream focus:border-dopaPink focus:outline-none" />
+        <div id="pinErrorMsg" class="text-xs font-bold text-red-500 mt-2 hidden">
+          ⚠️ Invalid PIN. Please try again.
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closePinModal()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-gray-100 text-dopaNavy hover:bg-gray-200">
+          Cancel
+        </button>
+        <button onclick="verifyLecturerPin()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-dopaPink text-white shadow-pop-sm hover:bg-pink-500">
+          Access Results 🚀
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lecturer Command Center -->
+  <div id="lecturerDashboardModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/70 backdrop-blur-md flex items-center justify-center p-2 sm:p-5 overflow-y-auto">
+    <div class="bg-white border-3 border-dopaNavy rounded-3xl w-full max-w-5xl max-h-[95vh] flex flex-col shadow-pop overflow-hidden my-auto">
+      
+      <div class="p-4 sm:p-6 bg-gradient-to-r from-dopaYellow via-yellow-100 to-dopaCream border-b-3 border-dopaNavy flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-dopaNavy text-white flex items-center justify-center text-2xl shadow-pop-sm border-2 border-dopaNavy">
+            🎓
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] font-black uppercase tracking-wider text-purple-900 bg-purple-100 px-2.5 py-0.5 rounded-full border border-purple-300">
+                Lecturer Command Center
+              </span>
+              <span id="pollStatusIndicator" class="text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                ● Poll Live
+              </span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-dopaNavy leading-tight mt-0.5">
+              Smart Writing Workshop — Executive Analytics
+            </h2>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="tactile-btn px-3 py-2 bg-white text-dopaNavy font-black text-xs rounded-xl border-2 border-dopaNavy shadow-pop-sm hover:bg-gray-100 flex items-center gap-1.5">
+            <span>🖨️</span> PDF Report
+          </button>
+          <button onclick="closeLecturerDashboard()" class="w-10 h-10 rounded-xl bg-white border-2 border-dopaNavy font-black text-lg text-dopaNavy hover:bg-dopaPink hover:text-white transition-all tactile-btn flex items-center justify-center">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <div class="px-5 py-3 bg-gray-50 border-b-2 border-dopaNavy/15 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <button onclick="exportCSV()" class="tactile-btn text-xs font-black px-3.5 py-2 bg-dopaBlue text-blue-950 rounded-xl border-2 border-dopaNavy shadow-pop-sm hover:bg-sky-300 flex items-center gap-1.5">
+            <span>📥</span> Export CSV
+          </button>
+          <button onclick="seedDemoData()" class="tactile-btn text-xs font-black px-3.5 py-2 bg-dopaYellow text-dopaNavy rounded-xl border-2 border-dopaNavy shadow-pop-sm hover:bg-yellow-300 flex items-center gap-1.5">
+            <span>🎲</span> Seed Sample Responses (20)
+          </button>
+          <button onclick="togglePollStatus()" id="togglePollBtn" class="tactile-btn text-xs font-black px-3.5 py-2 bg-white text-dopaNavy rounded-xl border-2 border-dopaNavy shadow-pop-sm hover:bg-gray-100 flex items-center gap-1.5">
+            <span>⏸️</span> Pause Poll
+          </button>
+          <button onclick="openChangePinModal()" class="tactile-btn text-xs font-black px-3.5 py-2 bg-white text-dopaNavy rounded-xl border-2 border-dopaNavy shadow-pop-sm hover:bg-gray-100 flex items-center gap-1.5">
+            <span>🔑</span> Change PIN
+          </button>
+        </div>
+
+        <div>
+          <button onclick="openResetConfirmModal()" class="tactile-btn text-xs font-extrabold text-red-600 hover:text-white hover:bg-red-500 bg-red-50 px-3.5 py-1.5 rounded-xl border border-red-300 transition-all">
+            🗑️ Reset All Data
+          </button>
+        </div>
+      </div>
+
+      <div class="p-4 sm:p-6 overflow-y-auto flex-grow space-y-6">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div class="bg-gradient-to-br from-yellow-50 to-white p-4 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+            <span class="text-xs font-black uppercase text-dopaNavy/60">Total Students</span>
+            <div id="dashTotalStudents" class="text-3xl font-black text-dopaNavy mt-1">0</div>
+            <div class="text-[11px] font-bold text-emerald-600 mt-1">100% Closed Feedback</div>
+          </div>
+          <div class="bg-gradient-to-br from-pink-50 to-white p-4 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+            <span class="text-xs font-black uppercase text-dopaNavy/60">Dopamine Score</span>
+            <div id="dashDopamineIndex" class="text-3xl font-black text-dopaPink mt-1">0%</div>
+            <div class="text-[11px] font-bold text-dopaNavy/70 mt-1">Overall Satisfaction</div>
+          </div>
+          <div class="bg-gradient-to-br from-emerald-50 to-white p-4 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+            <span class="text-xs font-black uppercase text-dopaNavy/60">Advocate Rating</span>
+            <div id="dashRecommendationRate" class="text-3xl font-black text-emerald-600 mt-1">0%</div>
+            <div class="text-[11px] font-bold text-dopaNavy/70 mt-1">Referral (Q9)</div>
+          </div>
+          <div class="bg-gradient-to-br from-purple-50 to-white p-4 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+            <span class="text-xs font-black uppercase text-dopaNavy/60">Ideas / Sparks</span>
+            <div id="dashCommentsCount" class="text-3xl font-black text-dopaPurple mt-1">0</div>
+            <div class="text-[11px] font-bold text-dopaNavy/70 mt-1">Qualitative Feedback</div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+          <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">💡</span>
+            <h3 class="font-heading font-black text-base sm:text-lg text-dopaNavy">
+              Automated Pedagogical Insights & Action Items
+            </h3>
+          </div>
+          <div id="pedagogicalInsightsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-bold">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-heading font-black text-base sm:text-lg text-dopaNavy flex items-center gap-2">
+              <span>📊</span> Question-by-Question Response Distribution
+            </h3>
+            <span class="text-xs font-extrabold text-dopaNavy/60">10 Compulsory Metrics</span>
+          </div>
+          <div id="dashQuestionsContainer" class="space-y-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border-2 border-dopaNavy shadow-pop-sm">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="font-heading font-black text-base sm:text-lg text-dopaNavy flex items-center gap-2">
+              <span>💬</span> Anonymous Student Sparks & Reflections
+            </h3>
+            <span id="commentsBadgeCount" class="text-xs font-black bg-dopaYellow px-2.5 py-0.5 rounded-full border border-dopaNavy">
+              0 Sparks
+            </span>
+          </div>
+          <div id="dashCommentsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 bg-gray-50 border-t-2 border-dopaNavy/20 flex flex-wrap items-center justify-between gap-3 text-xs font-bold text-dopaNavy/70">
+        <div>
+          📌 Stored safely in local browser memory. Export CSV anytime for permanent academic reporting.
+        </div>
+        <button onclick="closeLecturerDashboard()" class="tactile-btn px-5 py-2 rounded-xl border-2 border-dopaNavy font-black text-xs bg-white text-dopaNavy hover:bg-gray-100 shadow-pop-sm">
+          Return to Workshop View
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="resetConfirmModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border-3 border-dopaNavy rounded-3xl p-6 max-w-sm w-full shadow-pop text-center">
+      <div class="text-4xl mb-2">🗑️</div>
+      <h3 class="font-heading font-black text-lg text-dopaNavy">Clear All Submissions?</h3>
+      <p class="text-xs font-semibold text-dopaNavy/70 mt-1 mb-4">
+        This will erase all recorded participant responses and qualitative comments. This action cannot be undone.
+      </p>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeResetConfirmModal()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-gray-100 text-dopaNavy hover:bg-gray-200">
+          Cancel
+        </button>
+        <button onclick="executeResetAllData()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-red-500 text-white shadow-pop-sm hover:bg-red-600">
+          Yes, Erase All
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="changePinModal" class="hidden fixed inset-0 z-50 bg-dopaNavy/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white border-3 border-dopaNavy rounded-3xl p-6 max-w-sm w-full shadow-pop text-center animate-pop-in">
+      <div class="w-12 h-12 bg-dopaYellow rounded-2xl border-2 border-dopaNavy mx-auto flex items-center justify-center text-2xl mb-2">
+        🔑
+      </div>
+      <h3 class="font-heading font-black text-lg text-dopaNavy">Update Facilitator PIN</h3>
+      <p class="text-xs font-semibold text-dopaNavy/70 mt-1 mb-4">
+        Set a new 4 to 6 digit private PIN to secure your dashboard.
+      </p>
+      <div class="space-y-3 mb-4">
+        <input id="newPinInput" type="password" maxlength="6" placeholder="Enter New PIN" class="w-full text-center text-xl font-black tracking-widest py-2.5 px-4 rounded-xl border-2 border-dopaNavy bg-dopaCream focus:border-dopaPink focus:outline-none" />
+        <input id="confirmPinInput" type="password" maxlength="6" placeholder="Confirm New PIN" class="w-full text-center text-xl font-black tracking-widest py-2.5 px-4 rounded-xl border-2 border-dopaNavy bg-dopaCream focus:border-dopaPink focus:outline-none" />
+        <div id="changePinErrorMsg" class="text-xs font-bold text-red-500 hidden">
+          ⚠️ PINs do not match or are shorter than 4 digits.
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="closeChangePinModal()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-gray-100 text-dopaNavy hover:bg-gray-200">
+          Cancel
+        </button>
+        <button onclick="saveNewPin()" class="tactile-btn py-2.5 px-4 rounded-xl border-2 border-dopaNavy font-black text-xs bg-dopaPink text-white shadow-pop-sm hover:bg-pink-500">
+          Save New PIN
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const popItQuestions = [
+      { id: 1, statement: "Pendahuluan tugasan akademik biasanya sekitar 10% daripada jumlah keseluruhan perkataan tugasan.", correctAnswer: true, explanation: "Pendahuluan biasanya ringkas tetapi cukup untuk memperkenalkan fokus tugasan." },
+      { id: 2, statement: "Ayat pembukaan seperti “Sejak azali lagi...” sangat sesuai digunakan dalam penulisan akademik.", correctAnswer: false, explanation: "Ayat klise dan terlalu umum melemahkan nada akademik." },
+      { id: 3, statement: "Literature review hanya perlu menyenaraikan ringkasan setiap artikel satu demi satu.", correctAnswer: false, explanation: "Literature review perlu membanding, mensintesis dan menilai kajian." },
+      { id: 4, statement: "Bahagian metodologi perlu menjelaskan apa yang dibuat, bagaimana ia dibuat, dan mengapa kaedah itu dipilih.", correctAnswer: true, explanation: "Metodologi mesti menerangkan dan justifikasi pilihan kaedah." },
+      { id: 5, statement: "Dalam metodologi, frasa seperti “guna beberapa pelajar dan tanya soalan” sudah cukup jelas.", correctAnswer: false, explanation: "Penulisan metodologi perlu spesifik dan formal." },
+      { id: 6, statement: "ChatGPT boleh membantu pelajar menjana idea dan menajamkan topik tugasan.", correctAnswer: true, explanation: "ChatGPT sesuai digunakan untuk brainstorming dan eksplorasi idea." },
+      { id: 7, statement: "Pelajar boleh terus menyalin bulat-bulat jawapan ChatGPT dan hantar sebagai tugasan akademik.", correctAnswer: false, explanation: "AI perlu digunakan secara bertanggungjawab, bukan menggantikan pemikiran sendiri." },
+      { id: 8, statement: "Prompt yang lebih jelas biasanya menghasilkan respons ChatGPT yang lebih berguna.", correctAnswer: true, explanation: "Prompt yang baik membantu AI memberi jawapan yang lebih tepat dan relevan." },
+      { id: 9, statement: "Dalam Scopus, operator Boolean seperti AND dan OR membantu memperbaiki carian artikel.", correctAnswer: true, explanation: "Operator Boolean membantu gabungkan konsep dan sinonim." },
+      { id: 10, statement: "Jika topik tugasan berkaitan Budget 2027, pelajar hanya perlu cari perkataan “Budget 2027” sahaja dalam Scopus.", correctAnswer: false, explanation: "Pelajar juga perlu cari konsep yang lebih luas seperti Islamic finance, financial inclusion, policy dan sebagainya." },
+      { id: 11, statement: "NotebookLM membantu pelajar memahami sumber yang mereka upload sendiri.", correctAnswer: true, explanation: "NotebookLM bekerja berdasarkan sumber yang dimuat naik oleh pengguna." },
+      { id: 12, statement: "NotebookLM patut dijadikan bukti utama tanpa perlu semak sumber asal.", correctAnswer: false, explanation: "Pelajar tetap perlu semak artikel dan dokumen asal." },
+      { id: 13, statement: "Mendeley boleh membantu memasukkan citation dan membina reference list secara automatik.", correctAnswer: true, explanation: "Mendeley memudahkan pengurusan rujukan dan sitasi." },
+      { id: 14, statement: "Walaupun guna Mendeley, pelajar tetap perlu semak semula ketepatan maklumat rujukan.", correctAnswer: true, explanation: "Metadata seperti nama penulis, tahun dan DOI perlu disahkan." },
+      { id: 15, statement: "Sebelum menghantar tugasan, pelajar tidak perlu menyemak format, ejaan dan struktur dokumen.", correctAnswer: false, explanation: "Semakan teknikal dan bahasa sangat penting sebelum submission." }
+    ];
+
+    const bubbleColors = [
+      "#FFD93D", "#FF6B9A", "#6BCBFF", "#6BCB77", "#B19CFF",
+      "#FFB84C", "#FFD93D", "#6BCBFF", "#FF6B9A", "#6BCB77",
+      "#B19CFF", "#FFB84C", "#FFD93D", "#6BCBFF", "#FF6B9A"
+    ];
+
+    let popGameActive = false;
+    let popUserAnswers = {};
+    let activePopQuestionIndex = null;
+
+    const questions = [
+      {
+        id: 1,
+        section: "Section 1: Vibe & Energy",
+        categoryTag: "⚡ Workshop Vibe",
+        title: "How would you describe the overall energy and excitement in the workshop?",
+        hint: "Pick the mood that resonated with you most today:",
+        options: [
+          { emoji: "🤩", label: "Mind-Blowing & Electrifying", sub: "100% engaged from start to end", score: 4, color: "#FFD93D" },
+          { emoji: "😊", label: "Fun & Uplifting", sub: "Enjoyed the cheerful dynamic pace", score: 3, color: "#6BCBFF" },
+          { emoji: "😐", label: "It Was Okay", sub: "Had good moments, but average", score: 2, color: "#B19CFF" },
+          { emoji: "🥱", label: "A Bit Slow / Low Energy", sub: "Needed more spark and excitement", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 2,
+        section: "Section 1: Vibe & Energy",
+        categoryTag: "💡 Clarity & Flow",
+        title: "How crystal-clear were the core writing frameworks and concepts?",
+        hint: "Did the explanations click seamlessly?",
+        options: [
+          { emoji: "💎", label: "Crystal Clear & Intuitive", sub: "Everything clicked instantly", score: 4, color: "#6BCB77" },
+          { emoji: "👍", label: "Easy to Follow", sub: "Most concepts made great sense", score: 3, color: "#6BCBFF" },
+          { emoji: "🤔", label: "Needed More Examples", sub: "Some sections were slightly tricky", score: 2, color: "#FFD93D" },
+          { emoji: "😵", label: "Confusing or Too Rushed", sub: "Felt lost during key parts", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 3,
+        section: "Section 1: Vibe & Energy",
+        categoryTag: "⏱️ Workshop Pace",
+        title: "What did you think of the workshop's speed and tempo?",
+        hint: "Was the rhythm comfortable for writing?",
+        options: [
+          { emoji: "🎯", label: "Goldilocks! Just Right", sub: "Perfect balance of theory & practice", score: 4, color: "#6BCB77" },
+          { emoji: "🏃", label: "A Touch Fast", sub: "Exciting, though wished for more time", score: 3, color: "#FFD93D" },
+          { emoji: "🐢", label: "A Bit Too Leisurely", sub: "Could cover concepts faster", score: 2, color: "#B19CFF" },
+          { emoji: "🌪️", label: "Too Fast & Overwhelming", sub: "Hard to keep up with tasks", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 4,
+        section: "Section 2: Writing Skills & Takeaways",
+        categoryTag: "🚀 Confidence Boost",
+        title: "How confident do you feel applying Smart Writing techniques now?",
+        hint: "Rate your post-workshop writing superpower:",
+        options: [
+          { emoji: "🚀", label: "Sky-High Confidence!", sub: "Eager to write and publish right now", score: 4, color: "#FF6B9A" },
+          { emoji: "✨", label: "Noticeable Boost", sub: "Have fresh tools I can't wait to try", score: 3, color: "#FFD93D" },
+          { emoji: "🌱", label: "Slight Improvement", sub: "Understand ideas, need more practice", score: 2, color: "#6BCB77" },
+          { emoji: "🥚", label: "About the Same", sub: "Didn't feel much change yet", score: 1, color: "#B19CFF" }
+        ]
+      },
+      {
+        id: 5,
+        section: "Section 2: Writing Skills & Takeaways",
+        categoryTag: "✍️ Hands-on Exercises",
+        title: "How engaging and creative were the hands-on writing exercises?",
+        hint: "Did the prompts get your ink flowing?",
+        options: [
+          { emoji: "🎨", label: "Extremely Inspiring!", sub: "Unlocked new creative perspectives", score: 4, color: "#FFD93D" },
+          { emoji: "📝", label: "Fun & Practical", sub: "Solid, hands-on practice", score: 3, color: "#6BCBFF" },
+          { emoji: "🔄", label: "Somewhat Predictable", sub: "Decent, but standard prompts", score: 2, color: "#B19CFF" },
+          { emoji: "💤", label: "Dry or Disconnected", sub: "Didn't spark my imagination", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 6,
+        section: "Section 2: Writing Skills & Takeaways",
+        categoryTag: "🛠️ Practical Applicability",
+        title: "How practical are the writing hacks for your real-world projects?",
+        hint: "Will you use these in essays, work, stories, or posts?",
+        options: [
+          { emoji: "💯", label: "100% Practical & Usable", sub: "Applying them straight away!", score: 4, color: "#6BCB77" },
+          { emoji: "💼", label: "Very Applicable", sub: "At least 3-4 golden takeaways", score: 3, color: "#6BCBFF" },
+          { emoji: "🤷", label: "Applicable to A Few Things", sub: "Some tips were niche", score: 2, color: "#FFD93D" },
+          { emoji: "📦", label: "Hard to Apply", sub: "Not relevant to my current writing", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 7,
+        section: "Section 3: Facilitator & Space",
+        categoryTag: "🎤 Facilitator Delivery",
+        title: "How did you find the trainer's delivery, enthusiasm, and guidance?",
+        hint: "Rate the workshop facilitator's guidance:",
+        options: [
+          { emoji: "🔥", label: "Inspiring & Highly Engaging", sub: "Captivating, encouraging, and clear", score: 4, color: "#FF6B9A" },
+          { emoji: "👏", label: "Warm, Clear & Knowledgeable", sub: "Great pacing and supportive answers", score: 3, color: "#6BCB77" },
+          { emoji: "🙂", label: "Friendly Enough", sub: "Covered the material fine", score: 2, color: "#FFD93D" },
+          { emoji: "📉", label: "Monotone or Lacked Spark", sub: "Could be more interactive", score: 1, color: "#B19CFF" }
+        ]
+      },
+      {
+        id: 8,
+        section: "Section 3: Facilitator & Space",
+        categoryTag: "🌈 Workshop Atmosphere",
+        title: "How comfortable and welcoming was the learning atmosphere?",
+        hint: "Did you feel safe sharing your drafts and thoughts?",
+        options: [
+          { emoji: "💖", label: "Super Safe & Empowering", sub: "Zero fear of making mistakes!", score: 4, color: "#FF6B9A" },
+          { emoji: "💬", label: "Collaborative & Friendly", sub: "Good team spirit and peer support", score: 3, color: "#6BCBFF" },
+          { emoji: "🪑", label: "Neutral / Quiet", sub: "Felt like a regular lecture", score: 2, color: "#FFD93D" },
+          { emoji: "🤐", label: "Felt A Bit Intimidating", sub: "Hesitant to participate actively", score: 1, color: "#B19CFF" }
+        ]
+      },
+      {
+        id: 9,
+        section: "Section 4: Overall Impact",
+        categoryTag: "⭐ Recommendation",
+        title: "Would you recommend this Smart Writing Workshop to a friend or classmate?",
+        hint: "Your honest referral score:",
+        options: [
+          { emoji: "🌟", label: "Without Hesitation (10/10)!", sub: "Already thinking of who needs this!", score: 4, color: "#FFD93D" },
+          { emoji: "👍", label: "Definitely Yes", sub: "A very worthwhile investment of time", score: 3, color: "#6BCB77" },
+          { emoji: "🤔", label: "Maybe for Specific People", sub: "Only for beginners or select writers", score: 2, color: "#B19CFF" },
+          { emoji: "🙅", label: "Probably Not", sub: "Didn't meet my expectations", score: 1, color: "#FF6B9A" }
+        ]
+      },
+      {
+        id: 10,
+        section: "Section 4: Overall Impact",
+        categoryTag: "🧪 Dopamine Level",
+        title: "What is your final Dopamine Rating for today's overall experience?",
+        hint: "Sum up your total workshop emotion:",
+        options: [
+          { emoji: "🥳", label: "Maximum Dopamine Rush!", sub: "Inspired, energised, and buzzing", score: 4, color: "#FFD93D" },
+          { emoji: "🥰", label: "Sweet Satisfaction", sub: "Feel accomplished and happy", score: 3, color: "#FF6B9A" },
+          { emoji: "☕", label: "Mild Positive Boost", sub: "A good productive afternoon", score: 2, color: "#6BCBFF" },
+          { emoji: "🌧️", label: "Low Dopamine Output", sub: "Left feeling drained or uninspired", score: 1, color: "#B19CFF" }
+        ]
+      }
+    ];
+
+    const mascotsByProgress = [
+      { min: 0, max: 2, icon: "🐣", cheer: "⚡ Ready to roll!" },
+      { min: 3, max: 5, icon: "🐥", cheer: "🔥 Brainwaves flowing!" },
+      { min: 6, max: 8, icon: "🦄", cheer: "✨ Incredible momentum!" },
+      { min: 9, max: 10, icon: "🚀", cheer: "🌈 Masterclass finisher!" }
+    ];
+
+    let currentQuestionIndex = 0;
+    const userAnswers = {};
+    let soundEnabled = true;
+    let pollActive = true;
+    const PIN_STORAGE_KEY = "smart_writing_facilitator_pin";
+    function getStoredPin() {
+      return localStorage.getItem(PIN_STORAGE_KEY) || "1234";
+    }
+
+    let audioCtx = null;
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'select') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        } else if (type === 'advance') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.setValueAtTime(659.25, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else if (type === 'complete') {
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, idx) => {
+            const chordOsc = ctx.createOscillator();
+            const chordGain = ctx.createGain();
+            chordOsc.type = 'sine';
+            chordOsc.frequency.setValueAtTime(freq, now + idx * 0.08);
+            chordGain.gain.setValueAtTime(0.15, now + idx * 0.08);
+            chordGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.4);
+            chordOsc.connect(chordGain);
+            chordGain.connect(ctx.destination);
+            chordOsc.start(now + idx * 0.08);
+            chordOsc.stop(now + idx * 0.08 + 0.45);
+          });
+        } else if (type === 'pop') {
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(700, now + 0.04);
+          osc.frequency.exponentialRampToValueAtTime(140, now + 0.09);
+          gain.gain.setValueAtTime(0.28, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (type === 'correct') {
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(587.33, now);
+          osc.frequency.setValueAtTime(880, now + 0.09);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+          osc.start(now);
+          osc.stop(now + 0.28);
+        } else if (type === 'wrong') {
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(220, now);
+          osc.frequency.linearRampToValueAtTime(160, now + 0.18);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        }
+      } catch (e) {
+        console.warn("Audio playback issue:", e);
+      }
+    }
+
+    function switchAppTab(targetTab) {
+      const popSection = document.getElementById("popItGameSection");
+      const feedbackSection = document.getElementById("feedbackPollSection");
+      const feedbackHeader = document.getElementById("feedbackHeaderBanner");
+      const tabPopBtn = document.getElementById("tabPopItBtn");
+      const tabFeedbackBtn = document.getElementById("tabFeedbackBtn");
+
+      if (targetTab === 'popit') {
+        popSection.classList.remove("hidden");
+        feedbackSection.classList.add("hidden");
+        feedbackHeader.classList.add("hidden");
+
+        tabPopBtn.className = "tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-dopaYellow text-dopaNavy border-2 border-dopaNavy shadow-pop-sm";
+        tabFeedbackBtn.className = "tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-transparent text-dopaNavy/70 hover:text-dopaNavy border-2 border-transparent";
+      } else {
+        popSection.classList.add("hidden");
+        feedbackSection.classList.remove("hidden");
+        feedbackHeader.classList.remove("hidden");
+
+        tabFeedbackBtn.className = "tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-dopaPink text-white border-2 border-dopaNavy shadow-pop-sm";
+        tabPopBtn.className = "tactile-btn px-4 sm:px-6 py-2 rounded-xl font-heading font-black text-xs sm:text-sm transition-all flex items-center gap-2 bg-transparent text-dopaNavy/70 hover:text-dopaNavy border-2 border-transparent";
+      }
+    }
+
+    function startPopItGame() {
+      popGameActive = true;
+      document.getElementById("popWelcomeScreen").classList.add("hidden");
+      document.getElementById("popEndScreen").classList.add("hidden");
+      document.getElementById("popBoardScreen").classList.remove("hidden");
+      document.getElementById("popBoardScreen").classList.add("flex");
+      playSound('advance');
+      renderPopItBoard();
+    }
+
+    function renderPopItBoard() {
+      const grid = document.getElementById("popItBubblesGrid");
+      grid.innerHTML = "";
+
+      const answeredCount = Object.keys(popUserAnswers).length;
+      let currentScore = 0;
+      Object.values(popUserAnswers).forEach(ans => {
+        if (ans.isCorrect) currentScore++;
+      });
+
+      document.getElementById("popAnsweredCountText").textContent = `${answeredCount} / 15 Selesai Dipop`;
+      document.getElementById("popScoreText").textContent = `${currentScore} Betul`;
+      const pct = Math.round((answeredCount / popItQuestions.length) * 100);
+      document.getElementById("popProgressFill").style.width = `${pct}%`;
+
+      popItQuestions.forEach((q, idx) => {
+        const bubble = document.createElement("button");
+        bubble.type = "button";
+        const isAnswered = popUserAnswers[idx] !== undefined;
+        const color = bubbleColors[idx % bubbleColors.length];
+
+        let stateClasses = "";
+        let bubbleContent = `<span class="font-heading font-black text-base sm:text-xl text-dopaNavy">${idx + 1}</span>`;
+
+        if (isAnswered) {
+          const isCorrect = popUserAnswers[idx].isCorrect;
+          stateClasses = isCorrect ? "popped popped-correct bg-emerald-300" : "popped popped-wrong bg-rose-300";
+          bubbleContent = isCorrect 
+            ? `<span class="text-xl sm:text-2xl">✅</span>` 
+            : `<span class="text-xl sm:text-2xl">❌</span>`;
+        } else {
+          stateClasses = "bg-opacity-95 hover:bg-opacity-100";
+        }
+
+        bubble.className = `pop-bubble w-16 h-16 sm:w-20 sm:h-20 flex flex-col items-center justify-center font-black ${stateClasses}`;
+        if (!isAnswered) {
+          bubble.style.backgroundColor = color;
+        }
+
+        bubble.innerHTML = bubbleContent;
+        bubble.title = isAnswered ? `Soalan ${idx + 1}: ${popUserAnswers[idx].isCorrect ? 'Betul' : 'Salah'}` : `Pop Bubble ${idx + 1}!`;
+        bubble.onclick = () => openPopQuestion(idx);
+
+        grid.appendChild(bubble);
+      });
+    }
+
+    function openPopQuestion(qIdx) {
+      if (popUserAnswers[qIdx] !== undefined) {
+        showToast("Bubble ini sudah dipop! Pilih bubble lain 🫧");
+        return;
+      }
+
+      playSound('pop');
+      activePopQuestionIndex = qIdx;
+      const q = popItQuestions[qIdx];
+
+      document.getElementById("modalBubblePreview").textContent = qIdx + 1;
+      document.getElementById("modalBubblePreview").style.backgroundColor = bubbleColors[qIdx % bubbleColors.length];
+      document.getElementById("modalQuestionBadge").textContent = `Soalan ${qIdx + 1} / 15`;
+      document.getElementById("modalQuestionText").textContent = q.statement;
+
+      document.getElementById("modalChoiceButtons").classList.remove("hidden");
+      document.getElementById("modalFeedbackBox").classList.add("hidden");
+      document.getElementById("modalContinueContainer").classList.add("hidden");
+
+      document.getElementById("popQuestionModal").classList.remove("hidden");
+    }
+
+    function handlePopAnswer(userChoice) {
+      if (activePopQuestionIndex === null) return;
+      const q = popItQuestions[activePopQuestionIndex];
+      const isCorrect = userChoice === q.correctAnswer;
+
+      popUserAnswers[activePopQuestionIndex] = {
+        chosen: userChoice,
+        isCorrect: isCorrect
+      };
+
+      if (isCorrect) playSound('correct');
+      else playSound('wrong');
+
+      const feedbackBox = document.getElementById("modalFeedbackBox");
+      const feedbackStatus = document.getElementById("modalFeedbackStatus");
+      const feedbackIcon = document.getElementById("modalFeedbackIcon");
+      const feedbackExplanation = document.getElementById("modalFeedbackExplanation");
+
+      if (isCorrect) {
+        feedbackBox.className = "p-4 rounded-2xl border-2 mb-4 animate-pop-in bg-emerald-50 border-emerald-400 text-emerald-950";
+        feedbackStatus.textContent = "Betul! Hebat sekali! 🎉";
+        feedbackStatus.className = "font-heading font-black text-base text-emerald-900";
+        feedbackIcon.textContent = "✅";
+      } else {
+        feedbackBox.className = "p-4 rounded-2xl border-2 mb-4 animate-pop-in bg-rose-50 border-rose-400 text-rose-950";
+        feedbackStatus.textContent = `Salah! Jawapan sebenar: ${q.correctAnswer ? 'BETUL' : 'SALAH'}`;
+        feedbackStatus.className = "font-heading font-black text-base text-rose-900";
+        feedbackIcon.textContent = "❌";
+      }
+
+      feedbackExplanation.textContent = q.explanation;
+
+      document.getElementById("modalChoiceButtons").classList.add("hidden");
+      feedbackBox.classList.remove("hidden");
+      document.getElementById("modalContinueContainer").classList.remove("hidden");
+
+      renderPopItBoard();
+    }
+
+    function closePopQuestionModal() {
+      document.getElementById("popQuestionModal").classList.add("hidden");
+      activePopQuestionIndex = null;
+
+      if (Object.keys(popUserAnswers).length === popItQuestions.length) {
+        finishPopItGame();
+      }
+    }
+
+    function finishPopItGame() {
+      playSound('complete');
+      triggerConfetti();
+
+      let score = 0;
+      Object.values(popUserAnswers).forEach(ans => {
+        if (ans.isCorrect) score++;
+      });
+
+      const percentage = Math.round((score / popItQuestions.length) * 100);
+
+      document.getElementById("finalPopScore").textContent = score;
+      document.getElementById("finalPopPercent").textContent = `(${percentage}%)`;
+
+      let starString = "⭐⭐⭐⭐⭐";
+      let motivationText = "Hebat! Anda benar-benar memahami kandungan bengkel!";
+
+      if (score >= 13) {
+        starString = "⭐⭐⭐⭐⭐";
+        motivationText = "Hebat! Anda benar-benar memahami kandungan bengkel!";
+      } else if (score >= 10) {
+        starString = "⭐⭐⭐⭐";
+        motivationText = "Bagus! Anda sudah menguasai kebanyakan topik.";
+      } else if (score >= 7) {
+        starString = "⭐⭐⭐";
+        motivationText = "Baik! Teruskan ulang kaji untuk lebih yakin.";
+      } else {
+        starString = "⭐⭐";
+        motivationText = "Jangan risau. Cuba lagi dan terus belajar!";
+      }
+
+      document.getElementById("finalPopStarBadge").textContent = starString;
+      document.getElementById("finalPopMotivationText").textContent = motivationText;
+
+      document.getElementById("popBoardScreen").classList.add("hidden");
+      document.getElementById("popBoardScreen").classList.remove("flex");
+      document.getElementById("popEndScreen").classList.remove("hidden");
+    }
+
+    function restartPopItGame() {
+      popUserAnswers = {};
+      activePopQuestionIndex = null;
+      document.getElementById("popEndScreen").classList.add("hidden");
+      document.getElementById("popWelcomeScreen").classList.remove("hidden");
+      document.getElementById("popBoardScreen").classList.add("hidden");
+      document.getElementById("popBoardScreen").classList.remove("flex");
+      playSound('select');
+    }
+
+    function openPopReviewModal() {
+      const container = document.getElementById("popReviewListContainer");
+      container.innerHTML = "";
+
+      popItQuestions.forEach((q, idx) => {
+        const ans = popUserAnswers[idx];
+        const isCorrect = ans ? ans.isCorrect : false;
+        const userChoiceLabel = ans ? (ans.chosen ? 'BETUL' : 'SALAH') : 'Belum dijawab';
+
+        const row = document.createElement("div");
+        row.className = `p-3.5 rounded-2xl border-2 ${
+          isCorrect ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300'
+        }`;
+
+        row.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <span class="font-black text-xs ${isCorrect ? 'text-emerald-900' : 'text-rose-900'}">
+              Soalan ${idx + 1}: ${isCorrect ? '✅ Betul' : '❌ Salah'}
+            </span>
+            <span class="text-[11px] px-2 py-0.5 rounded-md font-extrabold ${isCorrect ? 'bg-emerald-200 text-emerald-950' : 'bg-rose-200 text-rose-950'}">
+              Pilihan anda: ${userChoiceLabel}
+            </span>
+          </div>
+          <p class="text-xs text-dopaNavy font-extrabold mb-1.5 leading-snug">
+            "${q.statement}"
+          </p>
+          <div class="text-[11px] font-semibold text-dopaNavy/80 bg-white/70 p-2 rounded-xl border border-dopaNavy/10">
+            <strong>Jawapan Tepat:</strong> ${q.correctAnswer ? 'BETUL' : 'SALAH'} — ${q.explanation}
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      document.getElementById("popReviewModal").classList.remove("hidden");
+    }
+
+    function closePopReviewModal() {
+      document.getElementById("popReviewModal").classList.add("hidden");
+    }
+
+    function toggleAudio() {
+      soundEnabled = !soundEnabled;
+      const soundIcon = document.getElementById("soundIcon");
+      soundIcon.textContent = soundEnabled ? "🔊" : "🔇";
+      showToast(soundEnabled ? "Audio Effects: ON 🎵" : "Audio Effects: Muted 🔕");
+    }
+
+    function renderCurrentQuestion() {
+      const q = questions[currentQuestionIndex];
+      const answeredCount = Object.keys(userAnswers).length;
+      const percentage = Math.round((answeredCount / questions.length) * 100);
+
+      document.getElementById("questionStepText").textContent = `Question ${currentQuestionIndex + 1} of ${questions.length}`;
+      document.getElementById("progressPercentBadge").textContent = `${percentage}% Completed`;
+      document.getElementById("progressBarFill").style.width = `${Math.max(percentage, 10)}%`;
+      document.getElementById("sectionBadge").textContent = q.section;
+
+      const mascotObj = mascotsByProgress.find(m => answeredCount >= m.min && answeredCount <= m.max) || mascotsByProgress[0];
+      document.getElementById("mascotAvatar").textContent = mascotObj.icon;
+      document.getElementById("streakCheer").textContent = mascotObj.cheer;
+
+      document.getElementById("cardCategoryTag").textContent = q.categoryTag;
+      document.getElementById("questionHeading").textContent = q.title;
+      document.getElementById("questionHint").textContent = q.hint;
+
+      const optionsContainer = document.getElementById("optionsContainer");
+      optionsContainer.innerHTML = "";
+
+      const currentSelected = userAnswers[currentQuestionIndex];
+
+      q.options.forEach((opt, idx) => {
+        const isSelected = currentSelected === idx;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = `option-card w-full text-left p-4 rounded-2xl border-2 border-dopaNavy shadow-pop-sm tactile-btn flex items-center gap-3 transition-all ${
+          isSelected ? "selected" : "bg-white hover:bg-gray-50"
+        }`;
+        
+        btn.onclick = () => selectOption(idx);
+
+        btn.innerHTML = `
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 border-2 border-dopaNavy" style="background-color: ${opt.color};">
+            ${opt.emoji}
+          </div>
+          <div class="flex-grow">
+            <div class="font-extrabold text-sm sm:text-base text-dopaNavy flex items-center justify-between">
+              <span>${opt.label}</span>
+              ${isSelected ? '<span class="text-xs bg-dopaPink text-white px-2 py-0.5 rounded-full font-black">✓ Chosen</span>' : ''}
+            </div>
+            <div class="text-xs font-semibold text-dopaNavy/70 mt-0.5">
+              ${opt.sub}
+            </div>
+          </div>
+        `;
+        optionsContainer.appendChild(btn);
+      });
+
+      document.getElementById("prevBtn").disabled = currentQuestionIndex === 0;
+      document.getElementById("nextBtn").disabled = userAnswers[currentQuestionIndex] === undefined;
+      document.getElementById("nextBtn").textContent = (currentQuestionIndex === questions.length - 1) ? "Review Summary →" : "Next →";
+    }
+
+    function selectOption(optionIndex) {
+      if (!pollActive) {
+        showToast("⚠️ Poll is currently paused by facilitator.");
+        return;
+      }
+      userAnswers[currentQuestionIndex] = optionIndex;
+      playSound('select');
+      renderCurrentQuestion();
+
+      setTimeout(() => {
+        if (currentQuestionIndex < questions.length - 1) {
+          currentQuestionIndex++;
+          playSound('advance');
+          renderCurrentQuestion();
+        } else {
+          showSummaryScreen();
+        }
+      }, 350);
+    }
+
+    function handleNextManual() {
+      if (userAnswers[currentQuestionIndex] === undefined) return;
+      if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        playSound('advance');
+        renderCurrentQuestion();
+      } else {
+        showSummaryScreen();
+      }
+    }
+
+    function handlePrevious() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        playSound('advance');
+        renderCurrentQuestion();
+      }
+    }
+
+    function goToQuestion(qIdx) {
+      document.getElementById("summaryScreen").classList.add("hidden");
+      document.getElementById("quizCardWrapper").classList.remove("hidden");
+      document.getElementById("progressContainer").classList.remove("hidden");
+      currentQuestionIndex = qIdx;
+      renderCurrentQuestion();
+    }
+
+    function showSummaryScreen() {
+      document.getElementById("quizCardWrapper").classList.add("hidden");
+      document.getElementById("progressContainer").classList.add("hidden");
+      const summaryScreen = document.getElementById("summaryScreen");
+      summaryScreen.classList.remove("hidden");
+
+      const chipsContainer = document.getElementById("summaryChips");
+      chipsContainer.innerHTML = "";
+
+      questions.forEach((q, idx) => {
+        const selectedOptIdx = userAnswers[idx];
+        const opt = q.options[selectedOptIdx];
+        const chip = document.createElement("div");
+        chip.className = "flex items-center justify-between p-2.5 bg-white rounded-xl border border-dopaNavy/20 hover:border-dopaPink transition-all";
+        chip.innerHTML = `
+          <div class="flex items-center gap-2 overflow-hidden pr-2">
+            <span class="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-xs font-black text-dopaNavy border border-dopaNavy/20 flex-shrink-0">
+              ${idx + 1}
+            </span>
+            <div class="truncate">
+              <span class="font-extrabold text-dopaNavy">${opt ? opt.emoji : '❓'} ${opt ? opt.label : 'Not Answered'}</span>
+              <span class="text-[11px] text-dopaNavy/60 block truncate">${q.title}</span>
+            </div>
+          </div>
+          <button onclick="goToQuestion(${idx})" class="text-xs font-black text-dopaPink hover:underline flex-shrink-0 px-2 py-1">
+            Edit
+          </button>
+        `;
+        chipsContainer.appendChild(chip);
+      });
+    }
+
+    function submitPoll() {
+      if (!pollActive) {
+        showToast("⚠️ Poll is paused. Cannot submit now.");
+        return;
+      }
+
+      for (let i = 0; i < questions.length; i++) {
+        if (userAnswers[i] === undefined) {
+          showToast(`Please answer Question ${i + 1} before submitting!`);
+          goToQuestion(i);
+          return;
+        }
+      }
+
+      const sparkText = document.getElementById("optionalFeedback").value.trim();
+
+      const submission = {
+        timestamp: new Date().toISOString(),
+        answers: { ...userAnswers },
+        optionalSpark: sparkText || null
+      };
+
+      saveSubmissionToStorage(submission);
+      playSound('complete');
+      triggerConfetti();
+
+      let totalScore = 0;
+      Object.keys(userAnswers).forEach(qIdx => {
+        const optIdx = userAnswers[qIdx];
+        totalScore += questions[qIdx].options[optIdx].score;
+      });
+
+      let personaTitle = "✨ Creative Spark Igniter ✨";
+      let personaDesc = "Ready to turn bold ideas into unforgettable stories and viral hooks!";
+
+      if (totalScore >= 36) {
+        personaTitle = "⚡ Dopamine Storytelling Virtuoso ⚡";
+        personaDesc = "Max energy, razor-sharp instincts, and pure narrative power unlocked!";
+      } else if (totalScore >= 28) {
+        personaTitle = "🎨 Wordsmith Architect 🎨";
+        personaDesc = "Equipped with strong frameworks to structure captivating articles!";
+      } else {
+        personaTitle = "🌱 Thoughtful Writing Explorer 🌱";
+        personaDesc = "Curious, thoughtful, and ready to polish gems of creative expression!";
+      }
+
+      document.getElementById("personaResultTitle").textContent = personaTitle;
+      document.getElementById("personaResultDesc").textContent = personaDesc;
+
+      document.getElementById("summaryScreen").classList.add("hidden");
+      document.getElementById("successScreen").classList.remove("hidden");
+    }
+
+    function restartPoll() {
+      for (let k in userAnswers) delete userAnswers[k];
+      currentQuestionIndex = 0;
+      document.getElementById("optionalFeedback").value = "";
+      document.getElementById("successScreen").classList.add("hidden");
+      document.getElementById("quizCardWrapper").classList.remove("hidden");
+      document.getElementById("progressContainer").classList.remove("hidden");
+      renderCurrentQuestion();
+    }
+
+    const STORAGE_KEY = "smart_writing_dopamine_poll_data_v2";
+
+    function getStoredSubmissions() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveSubmissionToStorage(submission) {
+      const data = getStoredSubmissions();
+      data.push(submission);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function openPinModal() {
+      document.getElementById("lecturerPinInput").value = "";
+      document.getElementById("pinErrorMsg").classList.add("hidden");
+      document.getElementById("pinModal").classList.remove("hidden");
+      setTimeout(() => document.getElementById("lecturerPinInput").focus(), 100);
+    }
+
+    function closePinModal() {
+      document.getElementById("pinModal").classList.add("hidden");
+    }
+
+    function verifyLecturerPin() {
+      const input = document.getElementById("lecturerPinInput").value.trim();
+      const currentPin = getStoredPin();
+      if (input === currentPin) {
+        closePinModal();
+        openLecturerDashboard();
+      } else {
+        document.getElementById("pinErrorMsg").classList.remove("hidden");
+        document.getElementById("lecturerPinInput").value = "";
+        playSound('select');
+      }
+    }
+
+    function openChangePinModal() {
+      document.getElementById("newPinInput").value = "";
+      document.getElementById("confirmPinInput").value = "";
+      document.getElementById("changePinErrorMsg").classList.add("hidden");
+      document.getElementById("changePinModal").classList.remove("hidden");
+      setTimeout(() => document.getElementById("newPinInput").focus(), 100);
+    }
+
+    function closeChangePinModal() {
+      document.getElementById("changePinModal").classList.add("hidden");
+    }
+
+    function saveNewPin() {
+      const newPin = document.getElementById("newPinInput").value.trim();
+      const confirmPin = document.getElementById("confirmPinInput").value.trim();
+      const errorMsg = document.getElementById("changePinErrorMsg");
+
+      if (newPin.length < 4) {
+        errorMsg.textContent = "⚠️ PIN must be at least 4 digits.";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      if (newPin !== confirmPin) {
+        errorMsg.textContent = "⚠️ PINs do not match. Please verify.";
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      localStorage.setItem(PIN_STORAGE_KEY, newPin);
+      closeChangePinModal();
+      showToast("Facilitator PIN updated successfully! 🔒");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const pinInput = document.getElementById("lecturerPinInput");
+      if (pinInput) {
+        pinInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") verifyLecturerPin();
+        });
+      }
+    });
+
+    function closeLecturerDashboard() {
+      document.getElementById("lecturerDashboardModal").classList.add("hidden");
+    }
+
+    function togglePollStatus() {
+      pollActive = !pollActive;
+      const indicator = document.getElementById("pollStatusIndicator");
+      const btn = document.getElementById("togglePollBtn");
+      const banner = document.getElementById("closedPollBanner");
+
+      if (pollActive) {
+        indicator.textContent = "● Poll Live";
+        indicator.className = "text-[10px] font-black uppercase tracking-wider text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300";
+        btn.innerHTML = "<span>⏸️</span> Pause Poll";
+        banner.classList.add("hidden");
+        showToast("Poll submissions are now LIVE 🚀");
+      } else {
+        indicator.textContent = "⏸ Poll Paused";
+        indicator.className = "text-[10px] font-black uppercase tracking-wider text-red-900 bg-red-100 px-2 py-0.5 rounded-full border border-red-300";
+        btn.innerHTML = "<span>▶️</span> Resume Poll";
+        banner.classList.remove("hidden");
+        showToast("Poll submissions are PAUSED ⏸️");
+      }
+    }
+
+    function openLecturerDashboard() {
+      renderDashboardData();
+      document.getElementById("lecturerDashboardModal").classList.remove("hidden");
+    }
+
+    function renderDashboardData() {
+      const submissions = getStoredSubmissions();
+      const totalCount = submissions.length;
+
+      document.getElementById("dashTotalStudents").textContent = totalCount;
+
+      if (totalCount === 0) {
+        document.getElementById("dashDopamineIndex").textContent = "0%";
+        document.getElementById("dashRecommendationRate").textContent = "0%";
+        document.getElementById("dashCommentsCount").textContent = "0";
+        document.getElementById("commentsBadgeCount").textContent = "0 Sparks";
+        
+        document.getElementById("pedagogicalInsightsContainer").innerHTML = `
+          <div class="col-span-full text-center py-6 text-dopaNavy/50">
+            No submissions recorded yet. Click <strong>"Seed Sample Responses"</strong> above to see instant analytics!
+          </div>
+        `;
+        document.getElementById("dashQuestionsContainer").innerHTML = `
+          <div class="text-center py-8 text-dopaNavy/50 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+            Awaiting student feedback submissions...
+          </div>
+        `;
+        document.getElementById("dashCommentsGrid").innerHTML = `
+          <div class="col-span-full text-center py-6 text-dopaNavy/50">
+            No anonymous sparks left yet.
+          </div>
+        `;
+        return;
+      }
+
+      let overallMaxPossible = totalCount * 10 * 4;
+      let overallEarnedScore = 0;
+      let promotersQ9 = 0;
+      let commentsList = [];
+
+      const questionTallies = Array.from({ length: 10 }, () => [0, 0, 0, 0]);
+
+      submissions.forEach(sub => {
+        if (sub.optionalSpark) {
+          commentsList.push({
+            text: sub.optionalSpark,
+            date: sub.timestamp ? new Date(sub.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'
+          });
+        }
+        for (let qIdx = 0; qIdx < 10; qIdx++) {
+          const optIdx = sub.answers[qIdx];
+          if (optIdx !== undefined && questions[qIdx].options[optIdx]) {
+            questionTallies[qIdx][optIdx]++;
+            overallEarnedScore += questions[qIdx].options[optIdx].score;
+            if (qIdx === 8 && (optIdx === 0 || optIdx === 1)) {
+              promotersQ9++;
+            }
+          }
+        }
+      });
+
+      const dopaminePct = Math.round((overallEarnedScore / overallMaxPossible) * 100);
+      const recRate = Math.round((promotersQ9 / totalCount) * 100);
+
+      document.getElementById("dashDopamineIndex").textContent = `${dopaminePct}%`;
+      document.getElementById("dashRecommendationRate").textContent = `${recRate}%`;
+      document.getElementById("dashCommentsCount").textContent = commentsList.length;
+      document.getElementById("commentsBadgeCount").textContent = `${commentsList.length} Sparks`;
+
+      renderPedagogicalInsights(questionTallies, totalCount, dopaminePct);
+      renderQuestionsBreakdown(questionTallies, totalCount);
+      renderCommentsFeed(commentsList);
+    }
+
+    function renderPedagogicalInsights(tallies, total, dopaminePct) {
+      const container = document.getElementById("pedagogicalInsightsContainer");
+      let highestAvg = -1, lowestAvg = 999;
+      let highestQ = 0, lowestQ = 0;
+
+      tallies.forEach((tally, idx) => {
+        const avg = (tally[0] * 4 + tally[1] * 3 + tally[2] * 2 + tally[3] * 1) / total;
+        if (avg > highestAvg) { highestAvg = avg; highestQ = idx; }
+        if (avg < lowestAvg) { lowestAvg = avg; lowestQ = idx; }
+      });
+
+      const strengthCard = `
+        <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4">
+          <div class="flex items-center gap-1.5 text-emerald-900 font-black text-sm mb-1">
+            <span>🌟</span> Cohort Peak Strength
+          </div>
+          <div class="text-xs text-emerald-950 font-bold">
+            ${questions[highestQ].categoryTag}: "${questions[highestQ].title}" scored an impressive <strong>${((highestAvg / 4) * 100).toFixed(1)}% satisfaction</strong>!
+          </div>
+          <div class="text-[11px] text-emerald-800 font-semibold mt-1">
+            Recommendation: Continue prioritizing this teaching technique as an anchor in future workshops.
+          </div>
+        </div>
+      `;
+
+      const growthCard = `
+        <div class="bg-yellow-50 border-2 border-yellow-300 rounded-2xl p-4">
+          <div class="flex items-center gap-1.5 text-yellow-900 font-black text-sm mb-1">
+            <span>🎯</span> Opportunity for Enhancement
+          </div>
+          <div class="text-xs text-yellow-950 font-bold">
+            ${questions[lowestQ].categoryTag}: "${questions[lowestQ].title}" has the most room for growth (Average: <strong>${((lowestAvg / 4) * 100).toFixed(1)}%</strong>).
+          </div>
+          <div class="text-[11px] text-yellow-800 font-semibold mt-1">
+            Recommendation: Consider allocating additional interactive walkthroughs or guided practice in this module.
+          </div>
+        </div>
+      `;
+
+      container.innerHTML = strengthCard + growthCard;
+    }
+
+    function renderQuestionsBreakdown(tallies, total) {
+      const container = document.getElementById("dashQuestionsContainer");
+      container.innerHTML = "";
+
+      questions.forEach((q, qIdx) => {
+        const tally = tallies[qIdx];
+        const avgScore = ((tally[0] * 4 + tally[1] * 3 + tally[2] * 2 + tally[3] * 1) / total).toFixed(2);
+        const satisfactionRate = Math.round(((tally[0] * 4 + tally[1] * 3 + tally[2] * 2 + tally[3] * 1) / (total * 4)) * 100);
+
+        const card = document.createElement("div");
+        card.className = "p-4 bg-gray-50 rounded-2xl border-2 border-dopaNavy/20";
+
+        let optionsRows = "";
+        q.options.forEach((opt, optIdx) => {
+          const count = tally[optIdx] || 0;
+          const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+          optionsRows += `
+            <div class="space-y-1">
+              <div class="flex items-center justify-between text-xs font-bold text-dopaNavy">
+                <span class="flex items-center gap-1.5 truncate max-w-[70%]">
+                  <span>${opt.emoji}</span>
+                  <span class="truncate">${opt.label}</span>
+                </span>
+                <span class="font-extrabold text-[11px]">${count} votes (${pct}%)</span>
+              </div>
+              <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden border border-gray-300">
+                <div class="h-full rounded-full transition-all duration-500" style="width: ${pct}%; background-color: ${opt.color};"></div>
+              </div>
+            </div>
+          `;
+        });
+
+        card.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-gray-200">
+            <div>
+              <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-white border border-dopaNavy/20 text-dopaNavy">
+                ${q.section}
+              </span>
+              <h4 class="font-heading font-black text-sm text-dopaNavy mt-1">
+                Q${qIdx + 1}: ${q.title}
+              </h4>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black px-2.5 py-1 rounded-xl bg-white border border-dopaNavy shadow-sm text-dopaNavy inline-block">
+                ★ ${avgScore} / 4.00 (${satisfactionRate}%)
+              </span>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${optionsRows}
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+    }
+
+    function renderCommentsFeed(comments) {
+      const grid = document.getElementById("dashCommentsGrid");
+      grid.innerHTML = "";
+
+      if (comments.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-6 text-dopaNavy/50 text-xs font-bold">
+            No reflections added yet. Participants can leave thoughts in the final step.
+          </div>
+        `;
+        return;
+      }
+
+      comments.forEach(c => {
+        const item = document.createElement("div");
+        item.className = "p-3 bg-pink-50/70 rounded-xl border border-dopaPink/40 text-xs font-bold text-dopaNavy flex flex-col justify-between";
+        item.innerHTML = `
+          <p class="italic text-dopaNavy/90 font-medium leading-relaxed">"${escapeHtml(c.text)}"</p>
+          <div class="text-[10px] text-dopaNavy/50 font-black mt-2 text-right">
+            🕒 ${c.date} • Anonymous Participant
+          </div>
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    function seedDemoData() {
+      const demoSubmissions = [];
+      const sampleSparks = [
+        "Loved the timed speed-writing rounds! The adrenaline really forced me to stop overthinking.",
+        "The hook templates are pure gold. Going to rewrite my presentation intro tonight!",
+        "Very engaging trainer energy! Time flew by so quickly.",
+        "Would love an advanced sequel workshop focusing entirely on editing and polishing.",
+        "The hands-on prompts were hilarious and inspiring. 10/10 vibe!",
+        "Clear slides, practical exercises, zero fluff. Best workshop of the semester.",
+        "Appreciated the encouraging feedback in breakout discussions.",
+        "Awesome aesthetic! Made taking a survey feel like an arcade game."
+      ];
+
+      for (let i = 0; i < 20; i++) {
+        const mockAnswers = {};
+        for (let q = 0; q < 10; q++) {
+          const rand = Math.random();
+          if (rand < 0.55) mockAnswers[q] = 0;
+          else if (rand < 0.85) mockAnswers[q] = 1;
+          else if (rand < 0.95) mockAnswers[q] = 2;
+          else mockAnswers[q] = 3;
+        }
+
+        demoSubmissions.push({
+          timestamp: new Date(Date.now() - Math.floor(Math.random() * 3600000 * 5)).toISOString(),
+          answers: mockAnswers,
+          optionalSpark: Math.random() > 0.4 ? sampleSparks[Math.floor(Math.random() * sampleSparks.length)] : null
+        });
+      }
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(demoSubmissions));
+      renderDashboardData();
+      showToast("Seeded 20 realistic student submissions! 🎉");
+    }
+
+    function exportCSV() {
+      const submissions = getStoredSubmissions();
+      if (submissions.length === 0) {
+        showToast("No data to export yet!");
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,";
+      const headers = ["SubmissionID", "Timestamp"];
+      questions.forEach((q, idx) => {
+        headers.push(`"Q${idx + 1}_${q.categoryTag.replace(/[^a-zA-Z0-9]/g, '')}"`);
+        headers.push(`"Q${idx + 1}_Score"`);
+      });
+      headers.push('"AnonymousSpark"');
+      csvContent += headers.join(",") + "\r\n";
+
+      submissions.forEach((sub, i) => {
+        const row = [i + 1, `"${sub.timestamp || 'N/A'}"`];
+        questions.forEach((q, qIdx) => {
+          const optIdx = sub.answers[qIdx];
+          if (optIdx !== undefined && q.options[optIdx]) {
+            row.push(`"${q.options[optIdx].label.replace(/"/g, '""')}"`);
+            row.push(q.options[optIdx].score);
+          } else {
+            row.push('""');
+            row.push(0);
+          }
+        });
+        const spark = sub.optionalSpark ? `"${sub.optionalSpark.replace(/"/g, '""')}"` : '""';
+        row.push(spark);
+        csvContent += row.join(",") + "\r\n";
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `SmartWritingWorkshop_Feedback_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast("CSV file generated and downloaded! 📥");
+    }
+
+    function openResetConfirmModal() {
+      document.getElementById("resetConfirmModal").classList.remove("hidden");
+    }
+
+    function closeResetConfirmModal() {
+      document.getElementById("resetConfirmModal").classList.add("hidden");
+    }
+
+    function executeResetAllData() {
+      localStorage.removeItem(STORAGE_KEY);
+      closeResetConfirmModal();
+      renderDashboardData();
+      showToast("All feedback submissions wiped clean! 🧹");
+    }
+
+    function openResultsModal() {
+      openLecturerDashboard();
+    }
+
+    function triggerConfetti() {
+      const canvas = document.getElementById("confettiCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = [];
+      const colors = ['#FFD93D', '#FF6B9A', '#6BCBFF', '#6BCB77', '#B19CFF'];
+      for (let i = 0; i < 90; i++) {
+        pieces.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.4,
+          r: Math.random() * 7 + 4,
+          dx: (Math.random() - 0.5) * 16,
+          dy: (Math.random() - 0.7) * 16,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          tilt: Math.random() * 10,
+          tiltAngle: Math.random() * Math.PI,
+          life: 100
+        });
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        pieces.forEach(p => {
+          if (p.life > 0) {
+            active = true;
+            p.x += p.dx;
+            p.y += p.dy;
+            p.dy += 0.35;
+            p.life -= 1.2;
+            p.tiltAngle += 0.1;
+            ctx.beginPath();
+            ctx.lineWidth = p.r;
+            ctx.strokeStyle = p.color;
+            ctx.moveTo(p.x + p.tilt, p.y);
+            ctx.lineTo(p.x, p.y + p.tilt + p.r / 2);
+            ctx.stroke();
+          }
+        });
+        if (active) requestAnimationFrame(draw);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      draw();
+    }
+
+    function shareCompletion() {
+      const textToCopy = `✍️ Just completed the Smart Writing Workshop Dopamine Poll! Rated the creative learning energy 10/10! 🚀 #SmartWriting #DopamineLearning`;
+      
+      const textArea = document.createElement("textarea");
+      textArea.value = textToCopy;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      try {
+        document.execCommand('copy');
+        showToast("Workshop Mood Card copied to clipboard! 📋✨");
+      } catch (err) {
+        showToast("Failed to copy card.");
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showToast(msg) {
+      let toast = document.getElementById("globalToast");
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "globalToast";
+        toast.className = "fixed bottom-5 left-1/2 -translate-x-1/2 bg-dopaNavy text-white px-5 py-3 rounded-2xl border-2 border-dopaYellow font-heading font-black text-xs sm:text-sm shadow-pop z-50 transition-all duration-300 pointer-events-none";
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = "1";
+      toast.style.transform = "translate(-50%, 0)";
+      
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translate(-50%, 20px)";
+      }, 2500);
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    window.onload = function () {
+      renderCurrentQuestion();
+      if (getStoredSubmissions().length === 0) {
+        seedDemoData();
+      }
+    };
+  </script>
+</body>
+</html>
